@@ -15,7 +15,8 @@ function StudentsList(props) {
     setRole(event.target.value);
     roleManager.setRole(event.target.value);
   };
-  const handleShow = (student) => {
+  const handleShow = (e, student) => {
+    e.preventDefault();
     if (student) setModalTitle("Edit Student Details");
     else {
       studentStore.resetFamilyMembers();
@@ -37,7 +38,7 @@ function StudentsList(props) {
             <a
               className="btn btn-primary"
               href="/#"
-              onClick={() => handleShow(null)}
+              onClick={(e) => handleShow(e, null)}
             >
               Add Student
             </a>
@@ -72,22 +73,22 @@ function StudentsList(props) {
             return (
               <tr key={student.ID}>
                 <td>
-                  <a href="/#" onClick={() => handleShow(student)}>
+                  <a href="/#" onClick={(e) => handleShow(e, student)}>
                     {student.ID}
                   </a>
                 </td>
                 <td>
-                  <a href="/#" onClick={() => handleShow(student)}>
+                  <a href="/#" onClick={(e) => handleShow(e, student)}>
                     {student.firstName}
                   </a>
                 </td>
                 <td>
-                  <a href="/#" onClick={() => handleShow(student)}>
+                  <a href="/#" onClick={(e) => handleShow(e, student)}>
                     {student.lastName}
                   </a>
                 </td>
                 <td>
-                  <a href="/#" onClick={() => handleShow(student)}>
+                  <a href="/#" onClick={(e) => handleShow(e, student)}>
                     {new Date(student.dateOfBirth).toDateString()}
                   </a>
                 </td>
@@ -95,7 +96,7 @@ function StudentsList(props) {
                   {roleManager.getRole() === "registrar" && (
                     <button
                       className="btn btn-outline-primary"
-                      onClick={() => handleShow(student)}
+                      onClick={(e) => handleShow(e, student)}
                     >
                       Edit
                     </button>
