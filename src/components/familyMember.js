@@ -1,11 +1,19 @@
 import { useState } from "react";
-import DatePicker from "react-datepicker";
+
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import * as studentActions from "../actions/studentActions";
+import TextField from "@mui/material/TextField";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
 
 export default function FamilyMember(props) {
   const [birthDate, setBirthDate] = useState(null);
@@ -16,9 +24,7 @@ export default function FamilyMember(props) {
     props.familyMember.relationship
   );
 
-  const [nationality, setNationality] = useState(
-    props.familyMember?.nationality
-  );
+  const [nationality, setNationality] = useState("");
   function handleBirthDate(newDate) {
     setBirthDate(newDate);
     setFamilyMember({ ...familyMember, dateOfBirth: newDate });
@@ -39,8 +45,8 @@ export default function FamilyMember(props) {
 
   function handleNationalityChange(e) {
     setNationality(e.target.value);
-    setFamilyMember({ ...familyMember, nationality: e.target.value });
-    props.familyMember.nationality = e.target.value;
+    setFamilyMember({ ...familyMember, nationality: { ID: e.target.value } });
+    props.familyMember.nationality = { ID: e.target.value };
   }
 
   function handleRelationshipChange(e) {
@@ -63,84 +69,91 @@ export default function FamilyMember(props) {
       <AccordionDetails>
         <div className="row">
           <div className="col-md-6">
-            <label htmlFor="inputEmail4" className="form-label">
-              First Name
-            </label>
-            <input
+            <TextField
+              required
+              id="firstName"
               name="firstName"
-              type="text"
-              className="form-control"
-              value={familyMember.firstName}
-              id="inputEmail4"
+              label="First Name"
               onChange={handleFirstName}
+              disabled={props.disabled}
+              value={familyMember.firstName}
             />
           </div>
           <div className="col-md-6">
-            <label htmlFor="inputPassword4" className="form-label">
-              Last Name
-            </label>
-            <input
+            <TextField
+              required
+              id="lastName"
+              label="Last Name"
               name="lastName"
-              type="text"
-              className="form-control"
               value={familyMember.lastName}
-              id="inputPassword4"
               onChange={handleLastName}
+              disabled={props.disabled}
             />
           </div>
         </div>
-        <div className="row">
+        <div className="row mt-3">
           <div className="col-md-6">
-            <label htmlFor="inputEmail4" className="form-label">
-              Date of Birth
-            </label>
-            <DatePicker
-              className="form-control"
-              selected={new Date(familyMember.dateOfBirth)}
-              onChange={(date) => handleBirthDate(date)}
-            />
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                label="Date of Birth"
+                disabled={props.disabled}
+                value={new Date(familyMember.dateOfBirth)}
+                onChange={(date) => handleBirthDate(date)}
+                renderInput={(params) => <TextField {...params} />}
+              />
+            </LocalizationProvider>
           </div>
           <div className="col-md-6">
-            <label htmlFor="inputPassword4" className="form-label">
-              Nationality
-            </label>
-            <select
-              name="nationality"
-              value={familyMember.nationality}
-              className="form-select"
-              id="floatingSelect"
-              aria-label="Floating label select example"
-              onChange={handleNationalityChange}
-            >
-              <option value="">Select</option>
-              {props.nationalities.map((nationality) => (
-                <option
-                  name={nationality.ID}
-                  key={nationality.ID}
-                  value={nationality.ID}
-                >
-                  {nationality.Title}
-                </option>
-              ))}
-            </select>
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Nationality</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                name="nationality"
+                value={familyMember?.nationality?.ID}
+                label="Nationality"
+                onChange={handleNationalityChange}
+                disabled={props.disabled}
+              >
+                <MenuItem value="">
+                  <em>Select</em>
+                </MenuItem>
+                {props.nationalities.map((nationality) => (
+                  <MenuItem
+                    name={nationality.ID}
+                    key={nationality.ID}
+                    value={nationality.ID}
+                  >
+                    {nationality.Title}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </div>
         </div>
-        <div className="row">
+        <div className="row mt-3">
           <div className="col-md-6">
-            <label htmlFor="inputPassword4" className="form-label">
-              Relationship
-            </label>
-            <select
-              name="nationality"
-              value={familyMember.relationship}
-              className="form-select"
-              id="floatingSelect"
-              aria-label="Floating label select example"
-              onChange={handleRelationshipChange}
-            >
-              <option value="Parent">Parent</option>
-              <option value="Sibling">Sibling</option>
-            </select>
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">
+                Relationship
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                name="relationship"
+                value={familyMember.relationship}
+                label="relationship"
+                onChange={handleRelationshipChange}
+                disabled={props.disabled}
+              >
+                <MenuItem name="Parent" key="parent" value="Parent">
+                  Parent
+                </MenuItem>
+                <MenuItem name="Sibling" key="Sibling" value="Sibling">
+                  Sibling
+                </MenuItem>
+              </Select>
+            </FormControl>
           </div>
         </div>
         <div className="row">
@@ -149,6 +162,7 @@ export default function FamilyMember(props) {
               type="button"
               className="btn btn-outline-danger"
               onClick={() => studentActions.deleteFamilyMember(familyMember.ID)}
+              disabled={props.disabled}
             >
               Delete
             </button>

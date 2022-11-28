@@ -1,11 +1,20 @@
 import { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
 import nationalityStore from "../stores/nationalityStore";
 import "react-datepicker/dist/react-datepicker.css";
 import { loadNationalities } from "../actions/nationalityActions";
 import studentStore from "../stores/studentStore";
 import * as studentActions from "../actions/studentActions";
 import FamilyMember from "./familyMember";
+import * as roleManager from "../api/roleUtil";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
 
 function AddEditStudent(props) {
   const [student, setStudent] = useState({
@@ -15,6 +24,7 @@ function AddEditStudent(props) {
     dateOfBirth: null,
   });
   const [birthDate, setBirthDate] = useState(null);
+  const [disabled, setDisabled] = useState(false);
   const [nationalities, setNationalities] = useState(
     nationalityStore.getNationalities()
   );
@@ -35,16 +45,17 @@ function AddEditStudent(props) {
     }
 
     if (props.selectedStudent) {
-      setStudent(props.selectedStudent);
+      setStudent({ ...props.selectedStudent });
       studentActions.loadStudentDetails(props.selectedStudent.ID);
+      setDisabled(roleManager.getRole() === "admin");
     }
 
     return () => {
       nationalityStore.removeChangeListener(onChange);
       studentStore.removeChangeListener(onChange);
       studentStore.resetStudentNationality();
-      setStudent({});
-      setStudentNationality(null);
+      // setStudent({});
+      // setStudentNationality(null);
     };
   }, [props.selectedStudent]);
 
@@ -85,7 +96,8 @@ function AddEditStudent(props) {
       firstName: "",
       lastName: "",
       dateOfBirth: null,
-      nationality: "",
+      nationality: { ID: "1" },
+      relationship: "Parent",
     };
     setFamilyMembers([...familyMembers, newMember]);
 
@@ -93,69 +105,70 @@ function AddEditStudent(props) {
   }
 
   return (
-    <>
-      <form className="row g-3" onSubmit={handleSubmit}>
-        <div className="col-md-6">
-          <label htmlFor="inputEmail4" className="form-label">
-            First Name
-          </label>
-          <input
-            name="firstName"
-            type="text"
-            className="form-control"
-            value={student.firstName}
-            id="inputEmail4"
-            onChange={handleChange}
-          />
-        </div>
-        <div className="col-md-6">
-          <label htmlFor="inputPassword4" className="form-label">
-            Last Name
-          </label>
-          <input
-            name="lastName"
-            type="text"
-            className="form-control"
-            value={student.lastName}
-            id="inputPassword4"
-            onChange={handleChange}
-          />
-        </div>
-        <div className="col-md-6">
-          <label htmlFor="inputEmail4" className="form-label">
-            Date of Birth
-          </label>
+    <form className="row g-3" onSubmit={handleSubmit}>
+      <div className="col-md-6">
+        <TextField
+          required
+          id="firstName"
+          name="firstName"
+          label="First Name"
+          onChange={handleChange}
+          value={student.firstName}
+          disabled={disabled}
+        />
+      </div>
+      <div className="col-md-6">
+        <TextField
+          required
+          id="lastName"
+          label="Last Name"
+          name="lastName"
+          onChange={handleChange}
+          value={student.lastName}
+          disabled={disabled}
+        />
+      </div>
+      <div className="col-md-6">
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
-            className="form-control"
-            selected={new Date(student.dateOfBirth)}
+            label="Date of Birth"
+            disabled={disabled}
+            value={new Date(student.dateOfBirth)}
             onChange={(date) => handleBirthDate(date)}
+            renderInput={(params) => <TextField {...params} />}
           />
-        </div>
-        <div className="col-md-6">
-          <label htmlFor="inputPassword4" className="form-label">
-            Nationality
-          </label>
-          <select
-            name="nationality"
+        </LocalizationProvider>
+      </div>
+      <div className="col-md-6">
+        <FormControl fullWidth>
+          <InputLabel id="demo-simple-select-label">Nationality</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
             value={studentNationality || ""}
+            label="Nationality"
             onChange={handleNationalityChange}
-            className="form-select"
-            id="floatingSelect"
-            aria-label="Floating label select example"
+            disabled={disabled}
           >
-            <option value="">Select</option>
             {nationalities.map((nationality) => (
-              <option
+              <MenuItem
                 name={nationality.ID}
                 key={nationality.ID}
                 value={nationality.ID}
               >
                 {nationality.Title}
-              </option>
+              </MenuItem>
             ))}
-          </select>
-        </div>
-        <div className="col-12">
+          </Select>
+        </FormControl>
+      </div>
+      <div className="col-12">
+        <Box
+          sx={{
+            borderRadius: 1,
+            border: 1,
+          }}
+        >
           <h4>Family Members</h4>
           {familyMembers.map((familyMember) => {
             return (
@@ -164,36 +177,39 @@ function AddEditStudent(props) {
                 familyMember={familyMember}
                 nationalities={nationalities}
                 handleChange={handleChange}
+                disabled={disabled}
               />
             );
           })}
-        </div>
-        <div className="col-12">
-          <button
-            type="button"
-            className="btn btn-success"
-            onClick={handleAddNewFamilyMember}
-          >
-            Add New Family Member
-          </button>
-        </div>
-        <div className="col-12 float-right">
-          <button
-            type="submit"
-            className="btn btn-primary btn-md center-block mx-2"
-          >
-            Submit
-          </button>
-          <button
-            type="button"
-            className="btn btn-danger btn-md center-block mx-2"
-            onClick={() => props.handleClose()}
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-    </>
+        </Box>
+      </div>
+      <div className="col-12">
+        <button
+          type="button"
+          className="btn btn-success"
+          onClick={handleAddNewFamilyMember}
+          disabled={disabled}
+        >
+          Add New Family Member
+        </button>
+      </div>
+      <div className="col-12 float-right">
+        <button
+          type="submit"
+          className="btn btn-primary btn-md center-block mx-2"
+          disabled={disabled}
+        >
+          Submit
+        </button>
+        <button
+          type="button"
+          className="btn btn-danger btn-md center-block mx-2"
+          onClick={() => props.handleClose()}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 }
 

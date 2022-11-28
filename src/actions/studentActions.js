@@ -35,16 +35,19 @@ export function saveStudent(student) {
       if (familyMember.ID && familyMember.ID > 0) {
         promises.push(familyApi.putFamilyMember(familyMember));
       } else {
-        promises.push(studentApi.postFamilyMember(student.ID, familyMember));
+        promises.push(
+          studentApi.postFamilyMember(savedStudent.ID, familyMember)
+        );
       }
     });
 
     Promise.all(promises).then((response) => {
       response.map((familyMember, index) => {
+        console.log("Family Member", familyMember);
         nationalityPromises.push(
           familyApi.saveFamilyMemberNationality(
             familyMember.ID,
-            student.familyMembers[index].nationality
+            student.familyMembers[index].nationality.ID
           )
         );
       });

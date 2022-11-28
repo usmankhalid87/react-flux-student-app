@@ -27,7 +27,7 @@ function StudentsList(props) {
 
   useEffect(() => {
     roleManager.setRole(role);
-  });
+  }, [role]);
 
   return (
     <>

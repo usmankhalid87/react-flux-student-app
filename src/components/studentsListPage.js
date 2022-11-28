@@ -4,7 +4,7 @@ import StudentsList from "../components/studentsList";
 import { loadStudents } from "../actions/studentActions";
 
 function StudentsListPage() {
-  const [students, setstudents] = useState(studentStore.getStudents());
+  const [students, setStudents] = useState(studentStore.getStudents());
 
   useEffect(() => {
     studentStore.addChangeListener(onChange);
@@ -15,7 +15,8 @@ function StudentsListPage() {
   }, []);
 
   function onChange() {
-    setstudents(studentStore.getStudents());
+    console.log("Student :", studentStore.getStudents());
+    setStudents([...studentStore.getStudents()]);
   }
 
   return (
